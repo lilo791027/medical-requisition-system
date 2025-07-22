@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藥品醫材請購單系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative; /* For notification badge positioning */
+        }
+
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: none; /* Hidden by default */
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #209cff 0%, #68e0cf 100%);
+            color: white;
+        }
+        .btn-download-all {
+            background: linear-gradient(45deg, #4CAF50 0%, #8BC34A 100%); /* Greenish gradient */
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        .btn:hover, .btn-download-all:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .item-row {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            border: 2px solid #f0f4f8;
+            transition: all 0.3s ease;
+        }
+
+        .item-row:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: linear-gradient(45deg, #ffa726 0%, #ff7043 100%);
+            color: white;
+        }
+
+        .status-approved {
+            background: linear-gradient(45deg, #66bb6a 0%, #43a047 100%);
+            color: white;
+        }
+
+        .status-rejected {
+            background: linear-gradient(45deg, #ef5350 0%, #e53935 100%);
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+        }
+
+        .inventory-item:hover {
+            background: rgba(79, 172, 254, 0.1);
+            transform: translateX(5px);
+        }
+
+        .low-stock {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .approval-section {
+            background: rgba(79, 172, 254, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px dashed #4facfe;
+        }
+
+        .approval-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4facfe;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            padding-left: 50px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4facfe;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .approval-buttons {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 藥品醫材請購系統</h1>
+            <p>智能化請購流程管理平台</p>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('request')">📝 新增請購</button>
+                <button class="nav-tab" onclick="showTab('approval')">
+                    ✅ 簽核管理
+                    <span id="notification-badge" class="notification-badge"></span>
+                </button>
+                <button class="nav-tab" onclick="showTab('approvedRequests')">✔️ 已核准</button>
+                <button class="nav-tab" onclick="showTab('rejectedRequests')">🚫 已駁回</button>
+                <button class="nav-tab" onclick="showTab('inventory')">📦 庫存管理</button>
+                <button class="nav-tab" onclick="showTab('reports')">📊 統計報表</button>
+                <button class="nav-tab" onclick="openAdminPanel()" style="background: rgba(255, 107, 107, 0.2);">
+                    🛠️ 系統管理
+                </button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="request" class="tab-content active">
+                <h2 style="margin-bottom: 30px; color: #333; font-size: 1.8rem;">新增請購單</h2>
+                
+                <form id="requestForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>請購單號</label>
+                            <input type="text" class="form-control" id="requestId" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>申請日期</label>
+                            <input type="date" class="form-control" id="requestDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>申請部門</label>
+                            <select class="form-control" id="department" required>
+                                <option value="">請選擇部門</option>
+                                <option value="總部">總部</option>
+                                <option value="上吉">上吉</option>
+                                <option value="立吉">立吉</option>
+                                <option value="立丞">立丞</option>
+                                <option value="上承">上承</option>
+                                <option value="立全">立全</option>
+                                <option value="立竹">立竹</option>
+                                <option value="立順">立順</option>
+                                <option value="上京">上京</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>申請人</label>
+                            <input type="text" class="form-control" id="applicant" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>請購事由</label>
+                        <textarea class="form-control" id="reason" rows="3" placeholder="請說明請購原因..." required></textarea>
+                    </div>
+
+                    <h3 style="margin: 30px 0 20px 0; color: #4facfe;">請購品項</h3>
+                    <div id="items">
+                        <div class="item-row">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>品項類別</label>
+                                    <select class="form-control item-category" required>
+                                        <option value="">請選擇類別</option>
+                                        <option value="藥品">藥品</option>
+                                        <option value="醫材">醫材</option>
+                                        <option value="耗材">耗材</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>品項名稱</label>
+                                    <input type="text" class="form-control item-name" placeholder="輸入品項名稱" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>規格</label>
+                                    <input type="text" class="form-control item-spec" placeholder="規格描述">
+                                </div>
+                                <div class="form-group">
+                                    <label>數量</label>
+                                    <input type="number" class="form-control item-quantity" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>單位</label>
+                                    <select class="form-control item-unit" required>
+                                        <option value="盒">盒</option>
+                                        <option value="瓶">瓶</option>
+                                        <option value="支">支</option>
+                                        <option value="個">個</option>
+                                        <option value="包">包</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>預估單價</label>
+                                    <input type="number" class="form-control item-price" step="0.01" min="0">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-danger" onclick="removeItem(this)" style="margin-top: 10px;">移除品項</button>
+                        </div>
+                    </div>
+
+                    <div style="margin: 20px 0;">
+                        <button type="button" class="btn btn-primary" onclick="addItem()">➕ 新增品項</button>
+                        <button type="submit" class="btn btn-success" style="float: right;">📤 提交請購單</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="approval" class="tab-content">
+                <h2 style="margin-bottom: 30px; color: #333; font-size: 1.8rem;">簽核管理 (待審核)</h2>
+                
+                <div class="search-box">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="form-control" placeholder="搜尋請購單號、申請人或部門..." id="approvalSearch" onkeyup="searchApprovalRequests()">
+                </div>
+
+                <div id="approvalList">
+                    </div>
+            </div>
+
+            <div id="approvedRequests" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 style="color: #333; font-size: 1.8rem; margin:0;">已核准請購單</h2>
+                    <button class="btn btn-download-all" onclick="downloadAllApprovedRequests()">💾 全部下載請購單</button>
+                </div>
+                
+                <div class="search-box">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="form-control" placeholder="搜尋請購單號、申請人或部門..." id="approvedSearch" onkeyup="searchApprovedRequests()">
+                </div>
+
+                <div id="approvedList">
+                    </div>
+            </div>
+
+            <div id="rejectedRequests" class="tab-content">
+                <h2 style="margin-bottom: 30px; color: #333; font-size: 1.8rem;">已駁回請購單</h2>
+                
+                <div class="search-box">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="form-control" placeholder="搜尋請購單號、申請人或部門..." id="rejectedSearch" onkeyup="searchRejectedRequests()">
+                </div>
+
+                <div id="rejectedList">
+                    </div>
+            </div>
+
+
+            <div id="inventory" class="tab-content">
+                <h2 style="margin-bottom: 30px; color: #333; font-size: 1.8rem;">庫存管理</h2>
+                
+                <div class="statistics">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalItems">0</div>
+                        <div class="stat-label">總品項數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lowStockItems">0</div>
+                        <div class="stat-label">低庫存警示</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="outOfStock">0</div>
+                        <div class="stat-label">缺貨品項</div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="form-control" placeholder="搜尋品項名稱或編號..." id="inventorySearch" onkeyup="searchInventoryItems()">
+                </div>
+
+                <div id="inventoryList">
+                    </div>
+            </div>
+
+            <div id="reports" class="tab-content">
+                <h2 style="margin-bottom: 30px; color: #333; font-size: 1.8rem;">統計報表</h2>
+                
+                <div class="statistics">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRequestsCount">0</div>
+                        <div class="stat-label">總請購單</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="approvedRequestsTotal">0</div>
+                        <div class="stat-label">已核准</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingRequestsTotal">0</div>
+                        <div class="stat-label">待審核</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="rejectedRequestsCountTotal">0</div>
+                        <div class="stat-label">已退回</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: #4facfe;">月度趨勢分析</h3>
+                    <p>本月請購金額較上月成長 15%，主要增長來自醫材類別。建議關注庫存週轉率優化。</p>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: #4facfe;">部門請購統計</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;" id="departmentStats">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 系統資料存儲
+    let requests = JSON.parse(localStorage.getItem('medicalRequests') || '[]');
+    let inventory = JSON.parse(localStorage.getItem('medicalInventory') || '[]');
+    let requestCounter = parseInt(localStorage.getItem('requestCounter') || '1000');
+
+    // 模擬的簽核人員設定 (Email, Name) - 雖然不再發送郵件，但保留此設定以備未來擴展
+    const approverSettings = {
+        '總部': ['lilo791027@gmail.com', '王總經理'],
+        '上吉': ['lilo791027@gmail.com', '李主任'],
+        '立吉': ['lilo791027@gmail.com', '陳經理'],
+        '立丞': ['lilo791027@gmail.com', '張主管'],
+        '上承': ['lilo791027@gmail.com', '林協理'],
+        '立全': ['lilo791027@gmail.com', '吳組長'],
+        '立竹': ['lilo791027@gmail.com', '黃科長'],
+        '立順': ['lilo791027@gmail.com', '蔡主任'],
+        '上京': ['lilo791027@gmail.com', '鄭經理']
+    };
+
+    // 模擬的瀏覽器通知系統
+    const notificationSystem = {
+        requestPermission: function() {
+            if (!("Notification" in window)) {
+                console.log("此瀏覽器不支援桌面通知。");
+            } else if (Notification.permission === "granted") {
+                console.log("桌面通知權限已授予。");
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === "granted") {
+                        console.log("桌面通知權限已授予。");
+                    }
+                });
+            }
+        },
+        sendNotification: function(title, body, data) {
+            if (Notification.permission === "granted") {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3004/3004381.png' // 替換為您的圖標
+                });
+                notification.onclick = function() {
+                    console.log('通知被點擊了！', data);
+                    // 可以導航到簽核頁面或顯示詳細資訊
+                    showTab('approval'); // 點擊通知後切換到簽核頁面
+                    loadApprovalList(); // 重新載入簽核列表以顯示最新狀態
+                };
+            }
+        },
+        updateNotificationBadge: function() {
+            const pendingCount = requests.filter(req => req.status === 'pending').length;
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                badge.textContent = pendingCount > 0 ? pendingCount : '';
+                badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+            }
+        }
+    };
+
+    // 初始化範例資料 (僅在首次載入或資料為空時新增)
+    function initializeSampleData() {
+        if (requests.length === 0) {
+            requests.push(
+                {
+                    id: 'REQ20250722001',
+                    date: '2025-07-22',
+                    department: '上吉',
+                    applicant: '李小明',
+                    applicantEmail: 'applicant@example.com', // 模擬申請人Email
+                    reason: '急診室常用藥品補充，避免斷藥影響病患照護。',
+                    status: 'pending',
+                    items: [
+                        { category: '藥品', name: '抗生素A', spec: '500mg/tablet', quantity: 10, unit: '盒', price: 1500 },
+                        { category: '耗材', name: '一次性手套', spec: 'M號', quantity: 50, unit: '包', price: 200 }
+                    ],
+                    submittedAt: new Date(2025, 6, 22, 9, 30).toISOString() // Month is 0-indexed
+                },
+                {
+                    id: 'REQ20250721002',
+                    date: '2025-07-21',
+                    department: '立吉',
+                    applicant: '陳大華',
+                    applicantEmail: 'applicant@example.com',
+                    reason: '手術室特殊醫材備貨，預防手術排程延誤。',
+                    status: 'approved',
+                    items: [
+                        { category: '醫材', name: '手術縫合線', spec: '3-0 Vicryl', quantity: 5, unit: '盒', price: 3500 },
+                        { category: '醫材', name: '消毒棉片', spec: '大片', quantity: 20, unit: '包', price: 100 }
+                    ],
+                    submittedAt: new Date(2025, 6, 21, 14, 0).toISOString(),
+                    approvedBy: '陳經理',
+                    approvedAt: new Date(2025, 6, 21, 16, 30).toISOString()
+                },
+                {
+                    id: 'REQ20250720003',
+                    date: '2025-07-20',
+                    department: '總部',
+                    applicant: '王曉婷',
+                    applicantEmail: 'applicant@example.com',
+                    reason: '行政部門辦公用品補給，用於日常辦公。',
+                    status: 'rejected',
+                    items: [
+                        { category: '耗材', name: 'A4影印紙', spec: '80磅', quantity: 5, unit: '箱', price: 800 }
+                    ],
+                    submittedAt: new Date(2025, 6, 20, 10, 0).toISOString(),
+                    rejectedBy: '王總經理',
+                    rejectedAt: new Date(2025, 6, 20, 11, 0).toISOString(),
+                    rejectReason: '非必要請購，請從現有庫存中調撥。'
+                },
+                { // 新增一個已核准的範例，確保已核准頁面有內容
+                    id: 'REQ20250719004',
+                    date: '2025-07-19',
+                    department: '上承',
+                    applicant: '趙志明',
+                    applicantEmail: 'applicant@example.com',
+                    reason: '護理站備用衛材補充，提升病房服務品質。',
+                    status: 'approved',
+                    items: [
+                        { category: '耗材', name: '醫療用口罩', spec: '成人用', quantity: 100, unit: '盒', price: 50 },
+                        { category: '醫材', name: '體溫計', spec: '耳溫槍', quantity: 5, unit: '支', price: 1200 }
+                    ],
+                    submittedAt: new Date(2025, 6, 19, 11, 15).toISOString(),
+                    approvedBy: '林協理',
+                    approvedAt: new Date(2025, 6, 19, 14, 0).toISOString()
+                }
+            );
+            localStorage.setItem('medicalRequests', JSON.stringify(requests));
+        }
+
+        if (inventory.length === 0) {
+            inventory.push(
+                { id: 'INV001', name: '退燒藥A', category: '藥品', spec: '200mg/tab', currentStock: 150, stockThreshold: 20, unit: '盒' },
+                { id: 'INV002', name: 'OK繃', category: '醫材', spec: '標準型', currentStock: 50, stockThreshold: 10, unit: '包' },
+                { id: 'INV003', name: '酒精棉片', category: '耗材', spec: '75%', currentStock: 8, stockThreshold: 15, unit: '盒' }, // Low stock
+                { id: 'INV004', name: '生理食鹽水', category: '醫材', spec: '500ml', currentStock: 2, stockThreshold: 5, unit: '瓶' }, // Low stock
+                { id: 'INV005', name: '止痛藥B', category: '藥品', spec: '10mg/cap', currentStock: 0, stockThreshold: 10, unit: '盒' } // Out of stock
+            );
+            localStorage.setItem('medicalInventory', JSON.stringify(inventory));
+        }
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeSampleData(); // 確保範例資料在載入時存在
+        generateRequestId();
+        setTodayDate();
+        loadApprovalList();
+        loadApprovedRequests(); // 新增：載入已核准列表
+        loadRejectedRequests(); // 載入駁回列表
+        loadInventoryList();
+        updateReportStats();
+        notificationSystem.requestPermission(); // 請求通知權限
+        notificationSystem.updateNotificationBadge();
+    });
+
+    // 頁籤切換
+    function showTab(tabName) {
+        // 隱藏所有頁籤內容
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // 移除所有按鈕的 active 類別
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 顯示選中的頁籤
+        document.getElementById(tabName).classList.add('active');
+        // 找到對應的按鈕並添加 active 類別
+        document.querySelector(`.nav-tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+
+        // 如果切換到簽核管理，更新通知標籤
+        if (tabName === 'approval') {
+            loadApprovalList(); // 重新載入以確保顯示最新狀態 (只顯示待審核)
+            notificationSystem.updateNotificationBadge();
+        } else if (tabName === 'approvedRequests') { // 新增：如果切換到已核准列表
+            loadApprovedRequests();
+        }
+        else if (tabName === 'rejectedRequests') { 
+            loadRejectedRequests(); // 重新載入駁回列表
+        }
+        else if (tabName === 'inventory') {
+            loadInventoryList(); // 重新載入庫存列表
+            updateInventoryStats(); // 更新庫存統計
+        } else if (tabName === 'reports') {
+            updateReportStats(); // 更新報表統計
+        }
+    }
+
+    // 生成請購單號
+    function generateRequestId() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const sequence = String(requestCounter++).padStart(3, '0');
+
+        document.getElementById('requestId').value = `REQ${year}${month}${day}${sequence}`;
+        localStorage.setItem('requestCounter', requestCounter.toString());
+    }
+
+    // 設置今日日期
+    function setTodayDate() {
+        const today = new Date();
+        document.getElementById('requestDate').value = today.toISOString().split('T')[0];
+    }
+
+    // 新增品項
+    function addItem() {
+        const itemsContainer = document.getElementById('items');
+        const newItem = document.createElement('div');
+        newItem.className = 'item-row';
+        newItem.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>品項類別</label>
+                        <select class="form-control item-category" required>
+                            <option value="">請選擇類別</option>
+                            <option value="藥品">藥品</option>
+                            <option value="醫材">醫材</option>
+                            <option value="耗材">耗材</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>品項名稱</label>
+                        <input type="text" class="form-control item-name" placeholder="輸入品項名稱" required>
+                    </div>
+                    <div class="form-group">
+                        <label>規格</label>
+                        <input type="text" class="form-control item-spec" placeholder="規格描述">
+                    </div>
+                    <div class="form-group">
+                        <label>數量</label>
+                        <input type="number" class="form-control item-quantity" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>單位</label>
+                        <select class="form-control item-unit" required>
+                            <option value="盒">盒</option>
+                            <option value="瓶">瓶</option>
+                            <option value="支">支</option>
+                            <option value="個">個</option>
+                            <option value="包">包</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>預估單價</label>
+                        <input type="number" class="form-control item-price" step="0.01" min="0">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)" style="margin-top: 10px;">移除品項</button>
+            `;
+        itemsContainer.appendChild(newItem);
+    }
+
+    // 移除品項
+    function removeItem(button) {
+        if (document.querySelectorAll('.item-row').length > 1) {
+            button.parentElement.remove();
+        } else {
+            alert('至少需要保留一個品項！');
+        }
+    }
+
+    // 提交請購單
+    document.getElementById('requestForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const department = document.getElementById('department').value;
+        const applicant = document.getElementById('applicant').value;
+        // const approver = approverSettings[department]; // 不再需要模擬郵件，此行可省略或保留用於其他目的
+
+        const formData = {
+            id: document.getElementById('requestId').value,
+            date: document.getElementById('requestDate').value,
+            department: department,
+            applicant: applicant,
+            applicantEmail: 'applicant@example.com', // 模擬申請人Email，實際應從用戶資料獲取
+            reason: document.getElementById('reason').value,
+            status: 'pending',
+            items: [],
+            submittedAt: new Date().toISOString()
+        };
+
+        // 收集所有品項資料
+        document.querySelectorAll('.item-row').forEach(row => {
+            const item = {
+                category: row.querySelector('.item-category').value,
+                name: row.querySelector('.item-name').value,
+                spec: row.querySelector('.item-spec').value,
+                quantity: parseInt(row.querySelector('.item-quantity').value),
+                unit: row.querySelector('.item-unit').value,
+                price: parseFloat(row.querySelector('.item-price').value) || 0
+            };
+            formData.items.push(item);
+        });
+
+        // 儲存請購單
+        requests.push(formData);
+        localStorage.setItem('medicalRequests', JSON.stringify(requests));
+
+        // 🔔 提交成功後，觸發瀏覽器桌面通知
+        notificationSystem.sendNotification(
+            `📦 新請購單提交成功！`,
+            `單號：${formData.id}\n部門：${formData.department}\n申請人：${formData.applicant}`,
+            { requestId: formData.id, department: formData.department }
+        );
+
+        alert(`請購單 ${formData.id} 已成功提交！`);
+
+        // 重置表單
+        document.getElementById('requestForm').reset();
+        generateRequestId();
+        setTodayDate();
+
+        // 重新載入品項區域為一個預設品項
+        const itemsContainer = document.getElementById('items');
+        itemsContainer.innerHTML = `
+                <div class="item-row">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>品項類別</label>
+                            <select class="form-control item-category" required>
+                                <option value="">請選擇類別</option>
+                                <option value="藥品">藥品</option>
+                                <option value="醫材">醫材</option>
+                                <option value="耗材">耗材</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>品項名稱</label>
+                            <input type="text" class="form-control item-name" placeholder="輸入品項名稱" required>
+                        </div>
+                        <div class="form-group">
+                            <label>規格</label>
+                            <input type="text" class="form-control item-spec" placeholder="規格描述">
+                        </div>
+                        <div class="form-group">
+                            <label>數量</label>
+                            <input type="number" class="form-control item-quantity" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>單位</label>
+                            <select class="form-control item-unit" required>
+                                <option value="盒">盒</option>
+                                <option value="瓶">瓶</option>
+                                <option value="支">支</option>
+                                <option value="個">個</option>
+                                <option value="包">包</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>預估單價</label>
+                            <input type="number" class="form-control item-price" step="0.01" min="0">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="removeItem(this)" style="margin-top: 10px;">移除品項</button>
+                </div>
+            `;
+        
+        loadApprovalList();
+        notificationSystem.updateNotificationBadge(); // 更新通知標籤
+        updateReportStats(); // 更新統計報表
+    });
+
+    // 載入簽核列表 (只顯示待審核)
+    function loadApprovalList(filterQuery = '') {
+        const approvalList = document.getElementById('approvalList');
+        let filteredRequests = requests.filter(req => 
+            req.status === 'pending' &&
+            (req.id.toLowerCase().includes(filterQuery.toLowerCase()) || 
+             req.applicant.toLowerCase().includes(filterQuery.toLowerCase()) || 
+             req.department.toLowerCase().includes(filterQuery.toLowerCase()))
+        );
+
+        if (filteredRequests.length === 0) {
+            approvalList.innerHTML = '<div class="card"><p style="text-align: center; color: #666;">目前沒有待簽核的請購單</p></div>';
+            return;
+        }
+
+        approvalList.innerHTML = filteredRequests.map(request => `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="color: #4facfe; margin-bottom: 5px;">${request.id}</h3>
+                            <p style="color: #666; margin: 0;">${request.department} - ${request.applicant}</p>
+                        </div>
+                        <div class="status-badge status-pending">待審核</div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong>申請日期：</strong> ${request.date}<br>
+                        <strong>請購事由：</strong> ${request.reason}
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <strong>請購品項：</strong>
+                        <div style="margin-top: 10px;">
+                            ${request.items.map(item => `
+                                <div style="padding: 8px; background: rgba(79, 172, 254, 0.1); margin: 5px 0; border-radius: 8px;">
+                                    ${item.name} (${item.spec}) - <strong>${item.quantity} ${item.unit}</strong> ${item.price > 0 ? ` @ NT$${item.price.toLocaleString()}` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="approval-buttons">
+                        <button class="btn btn-success" onclick="approveRequest('${request.id}')">✔️ 核准</button>
+                        <button class="btn btn-warning" onclick="rejectRequest('${request.id}')">✖️ 駁回</button>
+                    </div>
+                </div>
+            `).join('');
+        notificationSystem.updateNotificationBadge();
+    }
+
+    // 簽核搜尋功能
+    function searchApprovalRequests() {
+        const query = document.getElementById('approvalSearch').value;
+        loadApprovalList(query);
+    }
+
+    // 核准請購單
+    function approveRequest(id) {
+        const requestIndex = requests.findIndex(req => req.id === id);
+        if (requestIndex !== -1) {
+            const request = requests[requestIndex];
+            request.status = 'approved';
+            request.approvedBy = '系統管理員 (模擬)'; // 實際應為當前簽核人
+            request.approvedAt = new Date().toISOString();
+            localStorage.setItem('medicalRequests', JSON.stringify(requests));
+
+            // 更新庫存
+            request.items.forEach(reqItem => {
+                let existingItem = inventory.find(invItem => 
+                    invItem.name === reqItem.name && invItem.spec === reqItem.spec && invItem.category === reqItem.category
+                );
+                if (existingItem) {
+                    existingItem.currentStock += reqItem.quantity;
+                } else {
+                    // 如果庫存中沒有該品項，則新增
+                    inventory.push({
+                        id: 'INV' + (inventory.length + 1).toString().padStart(3, '0'), // 簡單的ID生成
+                        name: reqItem.name,
+                        category: reqItem.category,
+                        spec: reqItem.spec,
+                        currentStock: reqItem.quantity,
+                        stockThreshold: 10, // 新增品項預設閾值
+                        unit: reqItem.unit
+                    });
+                }
+            });
+            localStorage.setItem('medicalInventory', JSON.stringify(inventory));
+            
+            alert(`請購單 ${id} 已成功核准！`);
+            
+            loadApprovalList(); // 重新載入簽核列表 (更新待審核項目)
+            loadApprovedRequests(); // 重新載入已核准列表 (顯示新核准項目)
+            updateInventoryStats(); // 更新庫存統計
+            updateReportStats(); // 更新報表統計
+        }
+    }
+
+    // 駁回請購單
+    function rejectRequest(id) {
+        const requestIndex = requests.findIndex(req => req.id === id);
+        if (requestIndex !== -1) {
+            const rejectReason = prompt('請輸入駁回原因：');
+            if (rejectReason === null || rejectReason.trim() === '') {
+                alert('駁回原因不可為空。');
+                return;
+            }
+            const request = requests[requestIndex];
+            request.status = 'rejected';
+            request.rejectedBy = '系統管理員 (模擬)'; // 實際應為當前簽核人
+            request.rejectedAt = new Date().toISOString();
+            request.rejectReason = rejectReason;
+            localStorage.setItem('medicalRequests', JSON.stringify(requests));
+            alert(`請購單 ${id} 已成功駁回！`);
+
+            loadApprovalList(); // 重新載入簽核列表 (更新待審核項目)
+            loadRejectedRequests(); // 重新載入駁回列表 (顯示新駁回項目)
+            updateReportStats(); // 更新報表統計
+        }
+    }
+
+    // 載入已核准請購單列表
+    function loadApprovedRequests(filterQuery = '') {
+        const approvedList = document.getElementById('approvedList');
+        let filteredRequests = requests.filter(req => 
+            req.status === 'approved' &&
+            (req.id.toLowerCase().includes(filterQuery.toLowerCase()) || 
+             req.applicant.toLowerCase().includes(filterQuery.toLowerCase()) || 
+             req.department.toLowerCase().includes(filterQuery.toLowerCase()))
+        );
+
+        if (filteredRequests.length === 0) {
+            approvedList.innerHTML = '<div class="card"><p style="text-align: center; color: #666;">目前沒有已核准的請購單</p></div>';
+            return;
+        }
+
+        approvedList.innerHTML = filteredRequests.map(request => `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="color: #4facfe; margin-bottom: 5px;">${request.id}</h3>
+                            <p style="color: #666; margin: 0;">${request.department} - ${request.applicant}</p>
+                        </div>
+                        <div class="status-badge status-approved">已核准</div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong>申請日期：</strong> ${request.date}<br>
+                        <strong>請購事由：</strong> ${request.reason}<br>
+                        <strong>核准人員：</strong> ${request.approvedBy || 'N/A'}<br>
+                        <strong>核准時間：</strong> ${new Date(request.approvedAt).toLocaleString()}
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <strong>請購品項：</strong>
+                        <div style="margin-top: 10px;">
+                            ${request.items.map(item => `
+                                <div style="padding: 8px; background: rgba(102, 187, 106, 0.1); margin: 5px 0; border-radius: 8px;">
+                                    ${item.name} (${item.spec}) - <strong>${item.quantity} ${item.unit}</strong> ${item.price > 0 ? ` @ NT$${item.price.toLocaleString()}` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    // 已核准請購單搜尋功能
+    function searchApprovedRequests() {
+        const query = document.getElementById('approvedSearch').value;
+        loadApprovedRequests(query);
+    }
+
+    // 載入已駁回請購單列表
+    function loadRejectedRequests(filterQuery = '') {
+        const rejectedList = document.getElementById('rejectedList');
+        let filteredRequests = requests.filter(req => 
+            req.status === 'rejected' &&
+            (req.id.toLowerCase().includes(filterQuery.toLowerCase()) || 
+             req.applicant.toLowerCase().includes(filterQuery.toLowerCase()) || 
+             req.department.toLowerCase().includes(filterQuery.toLowerCase()) ||
+             (req.rejectReason && req.rejectReason.toLowerCase().includes(filterQuery.toLowerCase())))
+        );
+
+        if (filteredRequests.length === 0) {
+            rejectedList.innerHTML = '<div class="card"><p style="text-align: center; color: #666;">目前沒有已駁回的請購單</p></div>';
+            return;
+        }
+
+        rejectedList.innerHTML = filteredRequests.map(request => `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="color: #4facfe; margin-bottom: 5px;">${request.id}</h3>
+                            <p style="color: #666; margin: 0;">${request.department} - ${request.applicant}</p>
+                        </div>
+                        <div class="status-badge status-rejected">已駁回</div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong>申請日期：</strong> ${request.date}<br>
+                        <strong>請購事由：</strong> ${request.reason}<br>
+                        <strong>駁回原因：</strong> ${request.rejectReason || '無'}<br>
+                        <strong>駁回人員：</strong> ${request.rejectedBy || 'N/A'}<br>
+                        <strong>駁回時間：</strong> ${new Date(request.rejectedAt).toLocaleString()}
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <strong>請購品項：</strong>
+                        <div style="margin-top: 10px;">
+                            ${request.items.map(item => `
+                                <div style="padding: 8px; background: rgba(255, 107, 107, 0.1); margin: 5px 0; border-radius: 8px;">
+                                    ${item.name} (${item.spec}) - <strong>${item.quantity} ${item.unit}</strong> ${item.price > 0 ? ` @ NT$${item.price.toLocaleString()}` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    // 已駁回請購單搜尋功能
+    function searchRejectedRequests() {
+        const query = document.getElementById('rejectedSearch').value;
+        loadRejectedRequests(query);
+    }
+
+
+    // 載入庫存列表
+    function loadInventoryList(filterQuery = '') {
+        const inventoryList = document.getElementById('inventoryList');
+        let filteredInventory = inventory.filter(item => 
+            item.name.toLowerCase().includes(filterQuery.toLowerCase()) || 
+            item.id.toLowerCase().includes(filterQuery.toLowerCase()) || 
+            item.category.toLowerCase().includes(filterQuery.toLowerCase())
+        );
+
+        if (filteredInventory.length === 0) {
+            inventoryList.innerHTML = '<div class="card"><p style="text-align: center; color: #666;">無符合條件的庫存品項</p></div>';
+            return;
+        }
+
+        inventoryList.innerHTML = filteredInventory.map(item => `
+            <div class="inventory-item ${item.currentStock <= item.stockThreshold ? 'low-stock' : ''}">
+                <div>
+                    <strong>${item.name}</strong> (${item.category})<br>
+                    <small>規格: ${item.spec || 'N/A'}</small>
+                </div>
+                <div>
+                    庫存量: <strong>${item.currentStock} ${item.unit}</strong> / 閾值: ${item.stockThreshold} ${item.unit}
+                </div>
+            </div>
+        `).join('');
+
+        updateInventoryStats(); // 更新統計數據
+    }
+
+    // 庫存搜尋功能
+    function searchInventoryItems() {
+        const query = document.getElementById('inventorySearch').value;
+        loadInventoryList(query);
+    }
+
+    // 更新庫存統計
+    function updateInventoryStats() {
+        const totalItems = inventory.length;
+        const lowStockItems = inventory.filter(item => item.currentStock > 0 && item.currentStock <= item.stockThreshold).length;
+        const outOfStock = inventory.filter(item => item.currentStock === 0).length;
+
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('lowStockItems').textContent = lowStockItems;
+        document.getElementById('outOfStock').textContent = outOfStock;
+    }
+
+    // 更新報表統計數據
+    function updateReportStats() {
+        const totalRequests = requests.length;
+        const approvedCount = requests.filter(req => req.status === 'approved').length;
+        const pendingCount = requests.filter(req => req.status === 'pending').length;
+        const rejectedCount = requests.filter(req => req.status === 'rejected').length;
+
+        document.getElementById('totalRequestsCount').textContent = totalRequests;
+        document.getElementById('approvedRequestsTotal').textContent = approvedCount;
+        document.getElementById('pendingRequestsTotal').textContent = pendingCount;
+        document.getElementById('rejectedRequestsCountTotal').textContent = rejectedCount;
+
+        // 計算部門請購統計
+        const departmentCounts = {};
+        requests.forEach(req => {
+            departmentCounts[req.department] = (departmentCounts[req.department] || 0) + 1;
+        });
+
+        const departmentStatsDiv = document.getElementById('departmentStats');
+        departmentStatsDiv.innerHTML = '';
+        if (Object.keys(departmentCounts).length === 0) {
+            departmentStatsDiv.innerHTML = '<p style="text-align: center; color: #666;">暫無部門請購數據</p>';
+        } else {
+            const total = Object.values(departmentCounts).reduce((sum, count) => sum + count, 0);
+            for (const dept in departmentCounts) {
+                const percentage = total > 0 ? ((departmentCounts[dept] / total) * 100).toFixed(0) : 0;
+                const deptDiv = document.createElement('div');
+                deptDiv.textContent = `${dept}：${percentage}% (${departmentCounts[dept]} 單)`;
+                departmentStatsDiv.appendChild(deptDiv);
+            }
+        }
+    }
+
+    // 生成單個請購單的 HTML 內容
+    function generateSingleRequestHtml(request) {
+        let totalAmount = 0;
+        const itemsHtml = request.items.map(item => {
+            const itemTotal = item.quantity * (item.price || 0);
+            totalAmount += itemTotal;
+            return `
+                <tr>
+                    <td>${item.category}</td>
+                    <td>${item.name}</td>
+                    <td>${item.spec || 'N/A'}</td>
+                    <td>${item.quantity} ${item.unit}</td>
+                    <td>${item.price > 0 ? `NT$${item.price.toLocaleString()}` : 'N/A'}</td>
+                    <td>${item.price > 0 ? `NT$${itemTotal.toLocaleString()}` : 'N/A'}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const statusText = request.status === 'approved' ? '已核准' : (request.status === 'rejected' ? '已駁回' : '待審核');
+        const statusClass = request.status === 'approved' ? 'approved' : (request.status === 'rejected' ? 'rejected' : 'pending');
+
+        return `
+            <div class="request-page" style="margin-bottom: 50px; page-break-after: always;">
+                <div class="container-print" style="max-width: 800px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                    <h1 style="text-align: center; color: #4facfe; margin-bottom: 20px;">藥品醫材請購單</h1>
+                    <div class="info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                        <div><span style="font-weight: bold; margin-right: 5px;">請購單號:</span> ${request.id}</div>
+                        <div><span style="font-weight: bold; margin-right: 5px;">申請日期:</span> ${request.date}</div>
+                        <div><span style="font-weight: bold; margin-right: 5px;">申請部門:</span> ${request.department}</div>
+                        <div><span style="font-weight: bold; margin-right: 5px;">申請人:</span> ${request.applicant}</div>
+                        <div><span style="font-weight: bold; margin-right: 5px;">請購事由:</span> ${request.reason}</div>
+                        <div><span style="font-weight: bold; margin-right: 5px;">狀態:</span> <span class="status-badge ${statusClass}" style="display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; background-color: ${request.status === 'approved' ? '#66bb6a' : (request.status === 'rejected' ? '#ef5350' : '#ffa726')};">${statusText}</span></div>
+                    </div>
+
+                    <h2 style="margin-top: 20px; margin-bottom: 10px; color: #4facfe;">請購品項清單</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f4f8; color: #555;">類別</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f4f8; color: #555;">品項名稱</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f4f8; color: #555;">規格</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f4f8; color: #555;">數量/單位</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f4f8; color: #555;">預估單價</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background-color: #f0f4f8; color: #555;">小計</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+                    <div class="total" style="text-align: right; font-weight: bold; margin-top: 20px; font-size: 1.2em;">預估總金額: NT$${totalAmount.toLocaleString()}</div>
+
+                    <div class="footer-info" style="margin-top: 30px; border-top: 1px dashed #ddd; padding-top: 15px; font-size: 0.9em; color: #666;">
+                        ${request.status === 'approved' ? `
+                            <p><strong>核准人員:</strong> ${request.approvedBy || 'N/A'}</p>
+                            <p><strong>核准時間:</strong> ${new Date(request.approvedAt).toLocaleString()}</p>
+                        ` : ''}
+                        <p style="text-align: center; margin-top: 20px;">此為系統自動生成請購單，無須簽章。</p>
+                        <p style="text-align: center;">生成日期：${new Date().toLocaleString()}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // 下載所有已核准的請購單
+    function downloadAllApprovedRequests() {
+        const approvedRequests = requests.filter(req => req.status === 'approved');
+
+        if (approvedRequests.length === 0) {
+            alert('目前沒有已核准的請購單可以下載。');
+            return;
+        }
+
+        let allRequestsHtml = '';
+        approvedRequests.forEach(request => {
+            allRequestsHtml += generateSingleRequestHtml(request);
+        });
+
+        const fullHtmlContent = `
+            <!DOCTYPE html>
+            <html lang="zh-TW">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>所有已核准請購單</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; color: #333; }
+                    .container-print { max-width: 800px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                    h1 { text-align: center; color: #4facfe; margin-bottom: 20px; }
+                    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+                    .info-grid div span:first-child { font-weight: bold; margin-right: 5px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                    th { background-color: #f0f4f8; color: #555; }
+                    .total { text-align: right; font-weight: bold; margin-top: 20px; font-size: 1.2em; }
+                    .status-badge {
+                        display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; color: white;
+                        text-transform: uppercase; letter-spacing: 0.5px;
+                    }
+                    .status-badge.pending { background-color: #ffa726; }
+                    .status-badge.approved { background-color: #66bb6a; }
+                    .status-badge.rejected { background-color: #ef5350; }
+                    .footer-info { margin-top: 30px; border-top: 1px dashed #ddd; padding-top: 15px; font-size: 0.9em; color: #666; }
+                    .request-page { page-break-after: always; } /* For printing, each request on a new page */
+                    .request-page:last-child { page-break-after: avoid; }
+                </style>
+            </head>
+            <body>
+                ${allRequestsHtml}
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([fullHtmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `所有已核准請購單_${new Date().toISOString().slice(0,10)}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 系統管理面板 (Placeholder)
+    function openAdminPanel() {
+        alert('系統管理面板仍在開發中...');
+        // 在實際應用中，這會導向到一個新的頁面或彈出一個管理模態框
+    }
+    </script>
+</body>
+</html>
